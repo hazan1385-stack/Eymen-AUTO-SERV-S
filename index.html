@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eymen Auto Servis | Randevu</title>
+<style>
+:root{--red:#c62828;--ink:#171717;--muted:#667085;--line:#e6e8ec;--bg:#f5f6f8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:#111;color:#fff;padding:28px 18px;text-align:center;border-bottom:5px solid var(--red)}
+.logo{font-weight:900;letter-spacing:.08em;font-size:clamp(24px,5vw,36px)}
+header p{margin:4px 0 0;color:#d0d0d0}
+main{max-width:900px;margin:24px auto;padding:0 14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin:0 0 18px;box-shadow:0 5px 20px #1018280a}
+h2{font-size:21px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.field{display:flex;flex-direction:column;gap:6px}
+.wide{grid-column:1/-1}
+label{font-weight:650;font-size:14px}
+input,select,textarea{font:inherit;border:1px solid #cfd4dc;border-radius:10px;padding:12px;background:#fff;width:100%;min-width:0}
+textarea{min-height:86px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid #c6282833;border-color:var(--red)}
+button{border:0;border-radius:10px;padding:12px 18px;background:var(--red);color:#fff;font:inherit;font-weight:750;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}
+.secondary{background:#222}
+.msg{margin-top:12px;font-weight:600;overflow-wrap:anywhere}
+.hint{font-size:13px;color:var(--muted);margin-top:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row input{flex:1;min-width:180px}
+.hidden{display:none}
+.appt{border-top:1px solid var(--line);padding:12px 0}
+.appt:first-child{border:0}
+.admin-list{max-height:440px;overflow:auto}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;background:#f0f1f3;font-size:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.card{padding:17px}main{margin-top:14px}}
+</style>
+</head>
+<body>
+<header><div class="logo">EYMEN AUTO</div><p>PREMİUM SERVİS · Online Randevu Sistemi</p></header>
+<main>
+<section class="card">
+<h2>🗓️ Servis Randevusu Oluştur</h2>
+<form id="booking">
+<div class="grid">
+<div class="field"><label for="full_name">Ad Soyad</label><input id="full_name" autocomplete="name" required></div>
+<div class="field"><label for="phone">Telefon</label><input id="phone" type="tel" autocomplete="tel" required placeholder="05xx xxx xx xx"></div>
+<div class="field"><label for="plate">Araç Plakası</label><input id="plate" required placeholder="46 ABC 123"></div>
+<div class="field"><label for="brand">Marka</label><input id="brand" required></div>
+<div class="field"><label for="service">Servis İşlemi</label><select id="service" required><option value="">Seçiniz</option><option>Periyodik Bakım</option><option>Arıza Tespiti</option><option>Motor Mekanik</option><option>Fren Sistemi</option><option>Elektrik / Elektronik</option><option>Klima Servisi</option><option>Diğer</option></select></div>
+<div class="field"><label for="date">Randevu Tarihi</label><input id="date" type="date" required></div>
+<div class="field"><label for="time">Randevu Saati</label><input id="time" type="time" required></div>
+<div class="field wide"><label for="note">Not / Açıklama (isteğe bağlı)</label><textarea id="note" placeholder="Aracınızla ilgili belirtmek istediğiniz konu"></textarea></div>
+</div>
+<p class="hint">Randevu talebiniz gönderildikten sonra size bir randevu numarası gösterilir. Servis onayı ayrıca gerekebilir.</p>
+<button id="submit" type="submit">Randevu Talebi Gönder</button><div id="bookingMsg" class="msg" role="status"></div>
+</form>
+</section>
+<section class="card">
+<h2>🔎 Randevu Sorgula</h2>
+<div class="row"><input id="lookupNo" placeholder="Randevu numaranız" aria-label="Randevu numarası"><button id="lookupBtn" type="button" class="secondary">Sorgula</button></div>
+<div id="lookupMsg" class="msg" role="status"></div>
+</section>
+<section class="card">
+<h2>🔐 Yönetici Girişi</h2>
+<form id="loginForm">
+<div class="grid">
+<div class="field"><label for="email">E-posta</label><input id="email" type="email" autocomplete="username" required></div>
+<div class="field"><label for="password">Şifre</label><input id="password" type="password" autocomplete="current-password" required></div>
+</div>
+<p style="margin:14px 0 0"><button type="submit" class="secondary">Giriş Yap</button> <button type="button" id="logout" class="secondary hidden">Çıkış Yap</button></p>
+<div id="loginMsg" class="msg" role="status"></div>
+</form>
+<div id="adminArea" class="hidden"><h2 style="margin-top:22px">Randevular</h2><button id="refresh" type="button" class="secondary">Listeyi Yenile</button><div id="adminMsg" class="msg"></div><div id="adminList" class="admin-list"></div></div>
+</section>
+</main>
+<script>
+const SB_URL='https://qoylupixarjcgwtydjrz.supabase.co';
+const SB_KEY='sb_publishable_AQc092rBQ1Rf3CNzRVWzag_olpp42yj';
+let session=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function request(path,{method='GET',body,token=null,prefer}={}) {
+ const headers={'apikey':SB_KEY,'Content-Type':'application/json'};
+ if(token) headers.Authorization='Bearer '+token;
+ if(prefer) headers.Prefer=prefer;
+ const res=await fetch(SB_URL+'/rest/v1/'+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});
+ const txt=await res.text();let data;try{data=txt?JSON.parse(txt):null}catch{data=txt}
+ if(!res.ok)throw new Error(data?.message||data?.hint||data?.details||txt||`HTTP ${res.status}`);
+ return data;
+}
+async function auth(path,body){
+ const res=await fetch(SB_URL+'/auth/v1/'+path,{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const txt=await res.text();let data;try{data=txt?JSON.parse(txt):{}}catch{data={message:txt}}
+ if(!res.ok)throw new Error(data.msg||data.message||'Giriş başarısız');
+ return data;
+}
+function show(id,msg,ok=false){$(id).textContent=msg;$(id).style.color=ok?'#18794e':'#b42318'}
+const today=new Date();
+$('date').min=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+$('booking').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const btn=$('submit');btn.disabled=true;show('bookingMsg','Randevu talebi gönderiliyor…');
+ const payload={
+  p_full_name:$('full_name').value.trim(),
+  p_phone:$('phone').value.trim(),
+  p_plate:$('plate').value.trim().toUpperCase(),
+  p_brand:$('brand').value.trim(),
+  p_service:$('service').value,
+  p_appointment_date:$('date').value,
+  p_appointment_time:$('time').value,
+  p_note:$('note').value.trim()
+ };
+ try{
+  const result=await request('rpc/create_booking',{method:'POST',body:payload});
+  const appointmentNo=typeof result==='string'?result:result?.appointment_no;
+  if(!appointmentNo)throw new Error('Sunucu randevu numarası döndürmedi.');
+  show('bookingMsg',`Talebiniz alındı. Randevu numaranız: ${appointmentNo}. Lütfen bu numarayı saklayın.`,true);
+  $('booking').reset();
+ }catch(err){
+  show('bookingMsg','Kayıt yapılamadı: '+err.message+' — Supabase SQL kurulumunu uyguladığınızdan emin olun.');
+ }finally{btn.disabled=false}
+});
+$('lookupBtn').addEventListener('click',async()=>{
+ const no=$('lookupNo').value.trim();if(!no){show('lookupMsg','Randevu numaranızı girin.');return}
+ show('lookupMsg','Sorgulanıyor…');
+ try{
+  const rows=await request('appointments?appointment_no=eq.'+encodeURIComponent(no)+'&select=appointment_no,status,appointment_date,appointment_time,service');
+  if(!rows.length){show('lookupMsg','Bu numarayla randevu bulunamadı.');return}
+  const a=rows[0];show('lookupMsg',`Randevu: ${a.appointment_no} · Durum: ${a.status||'Bekliyor'} · ${a.appointment_date} ${String(a.appointment_time).slice(0,5)} · ${a.service}`,true);
+ }catch(err){show('lookupMsg','Sorgulama yapılamadı: '+err.message)}
+});
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();show('loginMsg','Giriş yapılıyor…');
+ try{const data=await auth('token?grant_type=password',{email:$('email').value.trim(),password:$('password').value});session=data;show('loginMsg','Giriş başarılı.',true);$('adminArea').classList.remove('hidden');$('logout').classList.remove('hidden');await loadAdmin();}
+ catch(err){show('loginMsg',err.message)}
+});
+$('logout').addEventListener('click',()=>{session=null;$('adminArea').classList.add('hidden');$('logout').classList.add('hidden');show('loginMsg','Çıkış yapıldı.',true);$('adminList').innerHTML=''});
+$('refresh').addEventListener('click',loadAdmin);
+async function loadAdmin(){
+ show('adminMsg','Randevular yükleniyor…');
+ try{
+  const rows=await request('appointments?select=*&order=appointment_date.asc,appointment_time.asc',{token:session.access_token});
+  if(!rows.length){$('adminList').innerHTML='<p>Henüz randevu yok.</p>';show('adminMsg','Liste güncel.',true);return}
+  $('adminList').innerHTML=rows.map(a=>`<article class="appt"><strong>${esc(a.appointment_no||'Randevu')}</strong> <span class="pill">${esc(a.status||'Bekliyor')}</span><br>${esc(a.appointment_date)} · ${esc(String(a.appointment_time||'').slice(0,5))}<br>${esc(a.service)}<br><small>Müşteri ID: ${esc(a.customer_id)} · Araç ID: ${esc(a.vehicle_id)}</small></article>`).join('');
+  show('adminMsg',`${rows.length} randevu listelendi.`,true);
+ }catch(err){show('adminMsg','Liste alınamadı: '+err.message)}
+}
+</script>
+</body>
+</html>
