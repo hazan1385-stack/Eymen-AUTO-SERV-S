@@ -771,6 +771,9 @@ $('loginForm').addEventListener(
 
 
       saveSession(data);
+      $('bookingSection')
+  .classList
+  .add('hidden');
 
 
       show(
@@ -812,7 +815,9 @@ $('logout').addEventListener(
   () => {
 
   clearSession();  
-
+$('bookingSection')
+  .classList
+  .remove('hidden');
     $('adminArea')
       .classList
       .add('hidden');
@@ -841,7 +846,9 @@ if(savedSession){
     $('adminArea')
       .classList
       .remove('hidden');
-
+$('bookingSection')
+  .classList
+  .add('hidden');
     $('logout')
       .classList
       .remove('hidden');
