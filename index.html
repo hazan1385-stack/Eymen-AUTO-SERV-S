@@ -414,7 +414,17 @@ const SB_KEY =
 'sb_publishable_AQc092rBQ1Rf3CNzRVWzag_olpp42yj';
 
 let session = null;
+const SESSION_KEY = 'eymen_auto_admin_session';
 
+function saveSession(data){
+  session = data;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+}
+
+function clearSession(){
+  session = null;
+  localStorage.removeItem(SESSION_KEY);
+}
 
 const $ = id =>
 document.getElementById(id);
@@ -760,7 +770,7 @@ $('loginForm').addEventListener(
         );
 
 
-      session = data;
+      saveSession(data);
 
 
       show(
@@ -801,7 +811,7 @@ $('logout').addEventListener(
   'click',
   () => {
 
-    session = null;
+  clearSession();  
 
     $('adminArea')
       .classList
@@ -822,7 +832,25 @@ $('logout').addEventListener(
   }
 );
 
+const savedSession = localStorage.getItem(SESSION_KEY);
 
+if(savedSession){
+  try{
+    session = JSON.parse(savedSession);
+
+    $('adminArea')
+      .classList
+      .remove('hidden');
+
+    $('logout')
+      .classList
+      .remove('hidden');
+
+    loadAdmin();
+  }catch{
+    clearSession();
+  }
+}
 $('refresh').addEventListener(
   'click',
   loadAdmin
