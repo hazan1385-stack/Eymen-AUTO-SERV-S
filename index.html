@@ -771,6 +771,9 @@ $('loginForm').addEventListener(
 
 
       saveSession(data);
+    $('loginFields')
+  .classList
+  .add('hidden');  
       $('bookingSection')
   .classList
   .add('hidden');
@@ -815,6 +818,9 @@ $('logout').addEventListener(
   () => {
 
   clearSession();  
+$('loginFields')
+  .classList
+  .remove('hidden');    
     $('bookingSection')
   .classList
   .remove('hidden');
@@ -848,6 +854,9 @@ if(savedSession){
       .classList
       .remove('hidden');
 $('bookingSection')
+  .classList
+  .add('hidden');
+    $('loginFields')
   .classList
   .add('hidden');
     $('logout')
