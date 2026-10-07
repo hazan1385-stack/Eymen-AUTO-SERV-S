@@ -1036,7 +1036,12 @@ async function loadAdmin(){
               `
               : ''
             }
-
+<button
+  type="button"
+  class="secondary vehicle-notes-btn"
+  data-vehicle-id="${a.vehicle_id}">
+  📁 Araç Notları
+</button>
           </article>
         `;
 
@@ -1060,7 +1065,46 @@ async function loadAdmin(){
 
   }
 
-}
+}$('adminList').addEventListener('click', async e => {
+
+  const btn = e.target.closest('.vehicle-notes-btn');
+
+  if(!btn) return;
+
+  const vehicleId = btn.dataset.vehicleId;
+
+  const note = prompt('📁 Bu araç için notunuzu yazın:');
+
+  if(!note || !note.trim()) return;
+
+  try{
+
+    await request(
+      'vehicle_notes',
+      {
+        method:'POST',
+        body:{
+          vehicle_id:vehicleId,
+          user_id:session.user.id,
+          note:note.trim()
+        },
+        token:session.access_token,
+        prefer:'return=minimal'
+      }
+    );
+
+    alert('✅ Araç notu kaydedildi.');
+
+  }catch(err){
+
+    alert(
+      '❌ Not kaydedilemedi: ' +
+      err.message
+    );
+
+  }
+
+});
 $('settingsBtn').addEventListener('click', () => {
   $('settingsArea').classList.toggle('hidden');
 });
