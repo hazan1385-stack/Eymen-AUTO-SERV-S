@@ -331,7 +331,7 @@ Sorgula
 <!-- YÖNETİCİ -->
 <section class="card">
 
-<h2>🔐 Yönetici Girişi</h2>
+<h2 id="loginTitle">🔐 Yönetici Girişi</h2>
 
 <form id="loginForm">
 
@@ -771,6 +771,7 @@ $('loginForm').addEventListener(
 
 
       saveSession(data);
+      $('loginTitle').classList.add('hidden');
     $('loginFields')
   .classList
   .add('hidden');  
