@@ -383,7 +383,33 @@ Giriş Yap
 <!-- ADMIN ALANI -->
 
 <div id="adminArea" class="hidden">
+<div style="margin:15px 0;">
+  <button type="button" id="settingsBtn" class="secondary">
+    ⚙️ Ayarlar & Not Defteri
+  </button>
+</div>
+  <div id="settingsArea" class="card hidden">
+  <h2>⚙️ Ayarlar & Not Defteri</h2>
 
+  <h3>🔐 Hesap Ayarları</h3>
+  <button type="button" id="changePasswordBtn" class="secondary">
+    Şifre Değiştir
+  </button>
+
+  <h3>📝 Özel Not Defteri</h3>
+  <textarea
+    id="adminNotes"
+    rows="8"
+    placeholder="Buraya özel notlarınızı yazabilirsiniz..."
+    style="width:100%;box-sizing:border-box;">
+  </textarea>
+
+  <button type="button" id="saveNotesBtn" class="secondary">
+    💾 Notu Kaydet
+  </button>
+
+  <div id="settingsMsg" class="msg"></div>
+</div>
 <h2 style="margin-top:22px">
 Randevular
 </h2>
@@ -1035,7 +1061,9 @@ async function loadAdmin(){
   }
 
 }
-
+$('settingsBtn').addEventListener('click', () => {
+  $('settingsArea').classList.toggle('hidden');
+});
 </script>
 
 </body>
