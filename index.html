@@ -1065,7 +1065,7 @@ async function loadAdmin(){
 
   }
 
-}$('adminList').addEventListener('click', async e => {
+$('adminList').addEventListener('click', async e => {
 
   const btn = e.target.closest('.vehicle-notes-btn');
 
@@ -1073,22 +1073,47 @@ async function loadAdmin(){
 
   const vehicleId = btn.dataset.vehicleId;
 
-  const note = prompt('📁 Bu araç için notunuzu yazın:');
+  try {
 
-  if(!note || !note.trim()) return;
+    const notes = await request(
+      'vehicle_notes?vehicle_id=eq.' +
+      encodeURIComponent(vehicleId) +
+      '&select=id,note,created_at&order=created_at.desc',
+      {
+        token: session.access_token
+      }
+    );
 
-  try{
+    let eskiNotlar = '';
+
+    if(notes.length){
+      eskiNotlar =
+        '\n\n📖 KAYITLI NOTLAR:\n\n' +
+        notes.map((n,i) =>
+          `${i+1}. ${n.note}`
+        ).join('\n\n');
+    } else {
+      eskiNotlar = '\n\n📖 Bu araç için henüz kayıtlı not yok.';
+    }
+
+    const note = prompt(
+      '📁 ARAÇ NOTLARI' +
+      eskiNotlar +
+      '\n\n✏️ Yeni not eklemek için aşağıya yazın:'
+    );
+
+    if(!note || !note.trim()) return;
 
     await request(
       'vehicle_notes',
       {
         method:'POST',
         body:{
-          vehicle_id:vehicleId,
-          user_id:session.user.id,
-          note:note.trim()
+          vehicle_id: vehicleId,
+          user_id: session.user.id,
+          note: note.trim()
         },
-        token:session.access_token,
+        token: session.access_token,
         prefer:'return=minimal'
       }
     );
@@ -1098,7 +1123,7 @@ async function loadAdmin(){
   }catch(err){
 
     alert(
-      '❌ Not kaydedilemedi: ' +
+      '❌ Not alınamadı: ' +
       err.message
     );
 
