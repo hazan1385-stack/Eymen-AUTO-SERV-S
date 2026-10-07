@@ -360,6 +360,7 @@ Sorgula
 <p style="margin:14px 0 0">
 
 <button
+  id="loginButton"
   type="submit"
   class="secondary">
 Giriş Yap
@@ -771,7 +772,7 @@ $('loginForm').addEventListener(
 
 
       saveSession(data);
-      
+      $('loginButton').classList.add('hidden');
       $('loginTitle').classList.add('hidden');
     $('loginFields')
   .classList
