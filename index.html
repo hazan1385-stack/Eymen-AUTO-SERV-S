@@ -1064,6 +1064,30 @@ async function loadAdmin(){
 $('settingsBtn').addEventListener('click', () => {
   $('settingsArea').classList.toggle('hidden');
 });
+  $('saveNotesBtn').addEventListener('click', async () => {
+  if (!session?.user?.id) {
+    show('settingsMsg', 'Oturum bulunamadı.', false);
+    return;
+  }
+
+  try {
+    await request('admin_notes?on_conflict=user_id', {
+      method: 'POST',
+      token: session.access_token,
+      body: JSON.stringify({
+        user_id: session.user.id,
+        note: $('adminNotes').value
+      }),
+      headers: {
+        'Prefer': 'resolution=merge-duplicates'
+      }
+    });
+
+    show('settingsMsg', 'Not başarıyla kaydedildi.', true);
+  } catch (err) {
+    show('settingsMsg', 'Not kaydedilemedi: ' + err.message, false);
+  }
+});
 </script>
 
 </body>
